@@ -205,7 +205,7 @@ class Kohana_Request implements HTTP_Request {
 			}
 
 			// Create the instance singleton
-			Request::$initial = $request = new Request($uri, $cache, $injected_routes);
+			Request::$initial = $request = new Request($uri, $cache, $injected_routes, $method);
 
 			// Store global GET and POST data in the initial request only
 			$request->protocol($protocol)
@@ -570,7 +570,7 @@ class Kohana_Request implements HTTP_Request {
 	 * @param   array   $routes  Route
 	 * @return  array
 	 */
-	public static function process_uri($uri, $routes = NULL)
+	public static function process_uri($uri, $routes = NULL, $method = HTTP_Request::GET)
 	{
 		// Load routes
 		$routes = (empty($routes)) ? Route::all() : $routes;
@@ -579,7 +579,7 @@ class Kohana_Request implements HTTP_Request {
 		foreach ($routes as $name => $route)
 		{
 			// We found something suitable
-			if ($params = $route->matches($uri))
+			if ($params = $route->matches($uri, $method))
 			{
 				return array(
 					'params' => $params,
@@ -767,7 +767,7 @@ class Kohana_Request implements HTTP_Request {
 	 * @uses    Route::all
 	 * @uses    Route::matches
 	 */
-	public function __construct($uri, HTTP_Cache $cache = NULL, $injected_routes = array())
+	public function __construct($uri, HTTP_Cache $cache = NULL, $injected_routes = array(), $method = HTTP_Request::GET)
 	{
 		// Initialise the header
 		$this->_header = new HTTP_Header(array());
@@ -797,7 +797,7 @@ class Kohana_Request implements HTTP_Request {
 			// Remove trailing slashes from the URI
 			$uri = trim($uri, '/');
 
-			$processed_uri = Request::process_uri($uri, $this->_routes);
+			$processed_uri = Request::process_uri($uri, $this->_routes, $method);
 
 			// Return here rather than throw exception. This will allow
 			// use of Request object even with unmatched route

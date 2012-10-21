@@ -282,6 +282,12 @@ class Kohana_Route {
 	 * @var  string
 	 */
 	protected $_route_regex;
+	
+	/**
+	 * @var array or string
+	 */
+	protected $_verbs;
+	
 
 	/**
 	 * Creates a new route. Sets the URI and regular expressions for keys.
@@ -368,6 +374,25 @@ class Kohana_Route {
 		return $this;
 	}
 
+	/* Gets or sets the HTTP methods this route is valid for
+	 *
+	 * @param array of or string representing the HTTP methods
+	 * returns $this or string
+	 */
+	public function via($verbs = NULL)
+	{
+		if( is_null($verbs) )
+		{
+			return $this->_verbs;
+		}
+		
+		if ( ! is_array($verbs))
+		{
+			$verbs = array($verbs);
+		}
+		$this->_verbs = $verbs;
+		return $this;
+	}
 	/**
 	 * Tests if the route matches a given URI. A successful match will return
 	 * all of the routed parameters as an array. A failed match will return
@@ -387,7 +412,7 @@ class Kohana_Route {
 	 * @return  array   on success
 	 * @return  FALSE   on failure
 	 */
-	public function matches($uri)
+	public function matches($uri, $method)
 	{
 		if ($this->_callback)
 		{
@@ -400,6 +425,9 @@ class Kohana_Route {
 		else
 		{
 			if ( ! preg_match($this->_route_regex, $uri, $matches))
+				return FALSE;
+
+			if( ! empty($this->_verbs) && ! in_array($method, $this->_verbs))
 				return FALSE;
 
 			$params = array();
